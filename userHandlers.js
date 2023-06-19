@@ -1,8 +1,27 @@
 const database = require("./database");
 
 const getUsers = (req, res) => {
+  const initialSql = "SELECT * FROM users";
+  const conditions = [];
+  const values = [];
+
+  if (req.query.city != null) {
+    conditions.push("city = ?");
+    values.push(req.query.city);
+  }
+  if (req.query.language != null) {
+    conditions.push("language = ?");
+    values.push(req.query.language);
+  }
+
+  let query = initialSql;
+  if (conditions.length > 0) {
+    const whereClause = conditions.join(" AND ");
+    query += ` WHERE ${whereClause}`;
+  }
+
   database
-    .query("SELECT * FROM users")
+    .query(query, values)
     .then((users) => {
       res.json(users);
     })
@@ -11,6 +30,8 @@ const getUsers = (req, res) => {
       res.status(500).send("Error retrieving data from the database");
     });
 };
+
+
 
 const getUserById = (req, res) => {
   const id = parseInt(req.params.id);
